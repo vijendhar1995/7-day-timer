@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pega 7-Day Countdown Timer</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            transition: background-color 1s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            flex-direction: column;
+            margin: 0;
+            background-color: #28a745;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        #countdown {
+            font-size: 50px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .buttons {
+            margin-top: 20px;
+        }
+        button {
+            padding: 12px 25px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            margin: 10px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        #startButton {
+            background: #007bff;
+            color: white;
+        }
+        #startButton:hover {
+            background: #0056b3;
+        }
+        #resetButton {
+            background: #dc3545;
+            color: white;
+        }
+        #resetButton:hover {
+            background: #a71d2a;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>PEGA 7-Day Countdown Timer</h1>
+        <div id="countdown">7 Days 00:00:00</div>
+        <div class="buttons">
+            <button id="startButton" onclick="startTimer()">Start</button>
+            <button id="resetButton" onclick="resetTimer()">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        let interval;
+        let isRunning = false;
+        let countdownDate;
+
+        function startTimer() {
+            if (isRunning) return;
+
+            // Set countdown date 7 days from now
+            countdownDate = new Date().getTime() + (7 * 24 * 60 * 60 * 1000);
+            localStorage.setItem("countdownEnd", countdownDate); // Store in localStorage
+
+            isRunning = true;
+            interval = setInterval(updateCountdown, 1000);
+            updateCountdown();
+        }
+
+        function updateCountdown() {
+            let now = new Date().getTime();
+            let storedTime = localStorage.getItem("countdownEnd");
+
+            if (!storedTime) {
+                document.getElementById("countdown").innerHTML = "7 Days 00:00:00";
+                return;
+            }
+
+            let distance = storedTime - now;
+
+            if (distance <= 0) {
+                clearInterval(interval);
+                document.getElementById("countdown").innerHTML = "Time's up!";
+                return;
+            }
+
+            let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("countdown").innerHTML = 
+                `${days} Days ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            updateBackgroundColor(days);
+        }
+
+        function updateBackgroundColor(daysLeft) {
+            let percent = (7 - daysLeft) / 7; 
+            let red = Math.floor(255 * percent);
+            let green = Math.floor(255 * (1 - percent));
+            document.body.style.backgroundColor = `rgb(${red}, ${green}, 0)`;
+        }
+
+        function resetTimer() {
+            clearInterval(interval);
+            isRunning = false;
+            localStorage.removeItem("countdownEnd");
+            document.getElementById("countdown").innerHTML = "7 Days 00:00:00";
+            document.body.style.backgroundColor = "#28a745";
+        }
+
+        // Automatically resume countdown on page reload
+        window.onload = function () {
+            let storedTime = localStorage.getItem("countdownEnd");
+            if (storedTime) {
+                isRunning = true;
+                interval = setInterval(updateCountdown, 1000);
+                updateCountdown();
+            }
+        };
+    </script>
+
+</body>
+</html>
